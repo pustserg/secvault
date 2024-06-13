@@ -7,15 +7,13 @@ import (
 )
 
 type Model struct {
-	choices  []string
-	cursor   int
-	selected map[int]string
+	choices []string
+	cursor  int
 }
 
 func NewInitialModel() Model {
 	return Model{
-		choices:  []string{"one", "two", "three", "four", "five"},
-		selected: map[int]string{},
+		choices: []string{"generate password"},
 	}
 }
 
@@ -37,11 +35,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case " ":
-			if _, ok := m.selected[m.cursor]; ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = m.choices[m.cursor]
+		case " ", "enter":
+			switch m.choices[m.cursor] {
+			case "generate password":
+				return NewGeneratePasswordModel(m), nil
 			}
 		}
 	}
@@ -50,8 +47,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "what are we selecting today?\n\n"
-	s += fmt.Sprintf("selected: %v\n\n", m.selected)
+	s := "What are we going to do today?\n\n"
 
 	for i, choice := range m.choices {
 		cursor := " "
@@ -59,12 +55,7 @@ func (m Model) View() string {
 			cursor = ">"
 		}
 
-		checked := " "
-		if _, ok := m.selected[i]; ok {
-			checked = "x"
-		}
-
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
 	s += "\npress 'q' to quit\n"
 	return s
