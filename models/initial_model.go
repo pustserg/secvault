@@ -4,15 +4,18 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/pustserg/secvault/config"
 )
 
 type Model struct {
+	cfg     *config.AppConfig
 	choices []string
 	cursor  int
 }
 
-func NewInitialModel() Model {
+func NewInitialModel(cfg *config.AppConfig) Model {
 	return Model{
+		cfg:     cfg,
 		choices: []string{"generate password"},
 	}
 }
@@ -38,7 +41,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case " ", "enter":
 			switch m.choices[m.cursor] {
 			case "generate password":
-				return NewGeneratePasswordModel(m), nil
+				return NewGeneratePasswordModel(m, m.cfg), nil
 			}
 		}
 	}

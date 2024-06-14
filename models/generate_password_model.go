@@ -7,14 +7,22 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/pustserg/secvault/config"
 )
 
 const (
-	defaultPasswordLength = "12"
-	maxPasswordLength     = 3 // 999 is maximum chars in password value, not the length of the password
+	maxPasswordLength = 3 // 999 is maximum chars in password value, not the length of the password
+)
+
+var (
+	symbolsArray   = []rune("!@#$%^&*()_+-=[]{}|;:,.<>?")
+	numbersArray   = []rune("0123456789")
+	uppercaseArray = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	lowercaseArray = []rune("abcdefghijklmnopqrstuvwxyz")
 )
 
 type GeneratePasswordModel struct {
+	cfg       *config.AppConfig
 	length    textinput.Model
 	password  string
 	prevModel tea.Model
@@ -23,14 +31,15 @@ type GeneratePasswordModel struct {
 	selected  map[string]bool
 }
 
-func NewGeneratePasswordModel(prevModel tea.Model) GeneratePasswordModel {
+func NewGeneratePasswordModel(prevModel tea.Model, cfg *config.AppConfig) GeneratePasswordModel {
 	textInput := textinput.NewModel()
 	textInput.Placeholder = "password length"
 	textInput.CharLimit = maxPasswordLength
-	textInput.SetValue(defaultPasswordLength)
+	textInput.SetValue(strconv.Itoa(cfg.PasswordLength))
 	textInput.Focus()
 
 	m := GeneratePasswordModel{
+		cfg:       cfg,
 		prevModel: prevModel,
 		length:    textInput,
 		options:   []string{"symbols", "numbers", "uppercase", "lowercase"},
@@ -52,6 +61,7 @@ func (m GeneratePasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
+			m.length.Blur()
 			return m, tea.Quit
 		case "j", "down":
 			if m.cursor < len(m.options)-1 {
@@ -110,19 +120,19 @@ func generatePassword(lengthValue string, selected map[string]bool) string {
 	var chars []rune
 
 	if selected["symbols"] {
-		chars = append(chars, []rune("!@#$%^&*()_+-=[]{}|;:,.<>?")...)
+		chars = append(chars, symbolsArray...)
 	}
 
 	if selected["numbers"] {
-		chars = append(chars, []rune("0123456789")...)
+		chars = append(chars, numbersArray...)
 	}
 
 	if selected["uppercase"] {
-		chars = append(chars, []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")...)
+		chars = append(chars, uppercaseArray...)
 	}
 
 	if selected["lowercase"] {
-		chars = append(chars, []rune("abcdefghijklmnopqrstuvwxyz")...)
+		chars = append(chars, lowercaseArray...)
 	}
 
 	if len(chars) == 0 {
