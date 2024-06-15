@@ -5,18 +5,25 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pustserg/secvault/config"
+	"github.com/pustserg/secvault/repository"
+)
+
+var (
+	choices = []string{"generate password"}
 )
 
 type Model struct {
+	repo    repository.RepositoryInterface
 	cfg     *config.AppConfig
 	choices []string
 	cursor  int
 }
 
-func NewInitialModel(cfg *config.AppConfig) Model {
+func NewInitialModel(cfg *config.AppConfig, repo repository.RepositoryInterface) Model {
 	return Model{
 		cfg:     cfg,
-		choices: []string{"generate password"},
+		repo:    repo,
+		choices: choices,
 	}
 }
 

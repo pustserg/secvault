@@ -7,22 +7,30 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pustserg/secvault/config"
 	"github.com/pustserg/secvault/models"
+	"github.com/pustserg/secvault/repository"
 )
 
 var (
 	cfg         *config.AppConfig
+	repo        repository.RepositoryInterface
 	workdir     string = os.Getenv("HOME") + "/.secvault"
 	config_path string = workdir + "/config.yaml"
 )
 
-func main() {
+func init() {
 	ensureAppDirExists(workdir)
 	ensureConfigFileExists(config_path)
 
 	cfg = config.NewAppConfig(config_path)
+	fmt.Println("Config loaded:", cfg)
 
-	model := models.NewInitialModel(cfg)
-	fmt.Println("Password length:", cfg.PasswordLength)
+	ensureStoragePathExists(cfg.StoragePath)
+	repo = repository.NewRepository(cfg.StoragePath)
+}
+
+func main() {
+	model := models.NewInitialModel(cfg, repo)
+
 	program := tea.NewProgram(model)
 	if _, err := program.Run(); err != nil {
 		fmt.Println("Error starting program:", err)
@@ -48,6 +56,28 @@ func ensureConfigFileExists(configFilePath string) {
 		} else {
 			os.Exit(0)
 		}
+	}
+}
+
+func ensureStoragePathExists(storagePath string) {
+	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
+		fmt.Println("Storage file not found, would you like to create a new one? (y/n)")
+		var answer string
+		fmt.Scanln(&answer)
+		if answer == "y" {
+			fmt.Println("Creating storage file at", storagePath)
+			file, err := os.OpenFile(storagePath, os.O_RDONLY|os.O_CREATE, 0644)
+			if err != nil {
+				fmt.Println("Error creating storage file:", err)
+				os.Exit(1)
+			}
+			file.Close()
+		} else {
+			os.Exit(0)
+		}
+	} else if err != nil {
+		fmt.Println("Error checking storage path:", err)
+		os.Exit(1)
 	}
 }
 
