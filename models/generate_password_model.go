@@ -32,7 +32,7 @@ type GeneratePasswordModel struct {
 }
 
 func NewGeneratePasswordModel(prevModel tea.Model, cfg *config.AppConfig) GeneratePasswordModel {
-	textInput := textinput.NewModel()
+	textInput := textinput.New()
 	textInput.Placeholder = "password length"
 	textInput.CharLimit = maxPasswordLength
 	textInput.SetValue(strconv.Itoa(cfg.PasswordLength))
