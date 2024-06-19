@@ -22,7 +22,6 @@ func init() {
 	ensureConfigFileExists(config_path)
 
 	cfg = config.NewAppConfig(config_path)
-	fmt.Println("Config loaded:", cfg)
 
 	ensureStoragePathExists(cfg.StoragePath)
 	repo = repository.NewRepository(cfg.StoragePath)

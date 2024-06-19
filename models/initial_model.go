@@ -37,21 +37,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
-		case "j", "down":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
-		case "k", "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
+		case "j", "down", "tab":
+			m.cursor = (m.cursor + 1) % len(m.choices)
+		case "k", "up", "shift+tab":
+			m.cursor = (m.cursor - 1 + len(m.choices)) % len(m.choices)
 		case " ", "enter":
 			switch m.choices[m.cursor] {
 			case "generate password":
 				return NewGeneratePasswordModel(m, m.cfg), nil
 			case "add entry":
 				// need to ask the password for storage and then go to the next model
-				return NewAskPasswordModel(m, m.repo), nil
+				return NewAskPasswordModel(m, m.repo, "add entry"), nil
 			}
 		}
 	}

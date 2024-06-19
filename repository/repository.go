@@ -4,21 +4,26 @@ import (
 	"os"
 	"regexp"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type RepositoryInterface interface {
 	List(query, password string) []Entry
 	Get(name, password string) (Entry, error)
 	Add(entry Entry, password string) error
+	CheckPassword(password string) error
 }
 
 type Entry struct {
+	ID        string
 	Kind      string
 	Name      string
+	URL       string
 	UserName  string
 	Password  string
 	TotpToken string
-	Value     string
+	Note      string
 }
 
 type Repository struct {
@@ -66,11 +71,37 @@ func (r *Repository) dump(password string) error {
 	return nil
 }
 
+func (r *Repository) CheckPassword(password string) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	content, err := os.ReadFile(r.data_file_path)
+	if err != nil {
+		return err
+	}
+
+	// if file is empty, we haven't saved any data yet
+	if len(content) == 0 {
+		return nil
+	}
+
+	saltForPasswordHash := content[:32]
+	passwordHash := content[32:64]
+
+	if verifyPassword(password, passwordHash, saltForPasswordHash) {
+		return nil
+	} else {
+		return ErrInvalidPassword
+	}
+}
+
 func (r *Repository) List(query, password string) []Entry {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	r.load(password)
+	err := r.load(password)
+	if err != nil {
+		return []Entry{}
+	}
 	if query == "" {
 		return r.entries
 	}
@@ -102,6 +133,8 @@ func (r *Repository) Get(name, password string) (Entry, error) {
 }
 
 func (r *Repository) Add(entry Entry, password string) error {
+	entry.ID = uuid.New().String()
+
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.load(password)
