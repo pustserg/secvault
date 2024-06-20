@@ -50,7 +50,7 @@ func (m ChooseEntryKindModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "Note":
 				return NewAddNoteModel(m.prevModel, m.repo, m.password), nil
 			case "Website":
-				return NewAddEntryModel(m.prevModel, m.repo, m.password), nil
+				return NewAddWebsiteModel(m.prevModel, m.repo, m.password), nil
 			}
 		}
 	}
