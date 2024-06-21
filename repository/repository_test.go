@@ -19,7 +19,7 @@ func TestNewRepository(t *testing.T) {
 	}
 }
 
-func TestListWithoudQuery(t *testing.T) {
+func TestListWithoutQuery(t *testing.T) {
 	os.Create(test_db_path)
 	repo := NewRepository(test_db_path)
 
@@ -63,6 +63,31 @@ func TestListWithQuery(t *testing.T) {
 	defer os.Remove(test_db_path)
 
 	entries := repo.List("first", "testpassword")
+
+	if len(entries) != 1 {
+		t.Error("List should return 1 entries, but got", len(entries))
+	}
+
+	if entries[0].Name != "first entry" {
+		t.Error("First entry name should be 'first entry'")
+	}
+}
+
+func TestListQueryCaseInsensitive(t *testing.T) {
+	os.Create(test_db_path)
+	repo := NewRepository(test_db_path)
+
+	secrets := []Entry{
+		Entry{Name: "first entry", UserName: "first", Password: "frstpwd", Note: "first value"},
+		Entry{Name: "second entry", UserName: "second", Password: "scndpwd", Note: "second value"},
+	}
+	repo.entries = secrets
+
+	repo.dump("testpassword")
+
+	defer os.Remove(test_db_path)
+
+	entries := repo.List("First", "testpassword")
 
 	if len(entries) != 1 {
 		t.Error("List should return 1 entries, but got", len(entries))
@@ -118,7 +143,9 @@ func TestGet(t *testing.T) {
 	repo.Add(one_more_first, "testpassword")
 	repo.Add(second, "testpassword")
 
-	found, err := repo.Get("first", "testpassword")
+	firstID := repo.entries[0].ID
+
+	found, err := repo.Get(firstID, "testpassword")
 
 	if err != nil {
 		t.Error("Get should not return error")

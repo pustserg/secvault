@@ -10,7 +10,7 @@ import (
 
 type RepositoryInterface interface {
 	List(query, password string) []Entry
-	Get(name, password string) (Entry, error)
+	Get(ID, password string) (Entry, error)
 	Add(entry Entry, password string) error
 	CheckPassword(password string) error
 }
@@ -107,7 +107,7 @@ func (r *Repository) List(query, password string) []Entry {
 	}
 
 	result := []Entry{}
-	regexp := regexp.MustCompile(query)
+	regexp := regexp.MustCompile("(?i)" + query)
 	for _, entry := range r.entries {
 		if regexp.MatchString(entry.Name) {
 			result = append(result, entry)
@@ -116,15 +116,14 @@ func (r *Repository) List(query, password string) []Entry {
 	return result
 }
 
-func (r *Repository) Get(name, password string) (Entry, error) {
+func (r *Repository) Get(ID, password string) (Entry, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
 	r.load(password)
-	regexp := regexp.MustCompile(name)
 	found := Entry{}
 	for _, entry := range r.entries {
-		if regexp.MatchString(entry.Name) {
+		if entry.ID == ID {
 			found = entry
 			break
 		}

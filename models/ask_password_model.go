@@ -78,6 +78,8 @@ func (m AskPasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					if m.targetAction == "add entry" {
 						return NewChooseEntryKindModel(m, m.repo, m.password.Value()), nil
+					} else if m.targetAction == "list entries" {
+						return NewListEntriesModel(m, m.repo, m.password.Value()), nil
 					} else {
 						return m, nil
 					}

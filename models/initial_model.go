@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	choices = []string{"generate password", "add entry"}
+	choices = []string{"generate password", "add entry", "list entries"}
 )
 
 type Model struct {
@@ -48,6 +48,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "add entry":
 				// need to ask the password for storage and then go to the next model
 				return NewAskPasswordModel(m, m.repo, "add entry"), nil
+			case "list entries":
+				return NewAskPasswordModel(m, m.repo, "list entries"), nil
 			}
 		}
 	}
