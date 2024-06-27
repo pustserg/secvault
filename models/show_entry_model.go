@@ -31,11 +31,23 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "b":
+		case tea.KeyEsc.String(), "b":
 			return m.prevModel, nil
-		case "q", "ctrl+c":
+		case tea.KeyCtrlC.String(), "q":
 			return m, tea.Quit
+		case tea.KeyBackspace.String(), tea.KeyDelete.String(), "d":
+			// After deleting the entry, we want to go back to the previous model (entries list)
+			var msg tea.Msg = "UPDATE_ENTRIES"
+			callbackCommand := func() tea.Msg { return msg }
+			return NewConfirmationModel(m.prevModel, callbackCommand, "Are you sure you want to delete this entry?", []string{"y", "n"}, func() error {
+				err := m.repo.Delete(m.entry.ID, m.password)
+				if err != nil {
+					return err
+				}
+				return nil
+			}), nil
 		}
+		return m, nil
 	}
 	return m, nil
 }
@@ -69,6 +81,7 @@ func (m ShowEntryModel) View() string {
 		s += fmt.Sprintf("TOTP Token: %s\n", m.entry.TotpToken)
 	}
 
-	s += "\nPress 'b' to go back, 'q' to quit\n"
+	s += "\nPress 'Backspace' to delete this entry\n"
+	s += "\nPress 'Esc' to go back, 'Ctrl+C' to quit\n"
 	return s
 }

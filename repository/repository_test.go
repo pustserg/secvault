@@ -199,3 +199,24 @@ func TestCheckPasswordWhenPasswordIsCorrect(t *testing.T) {
 		t.Error("CheckPassword should not return error")
 	}
 }
+
+func TestDeleteWithCorrectID(t *testing.T) {
+	os.Create(test_db_path)
+	repo := NewRepository(test_db_path)
+
+	repo.load("testpassword")
+	repo.Add(Entry{Name: "first entry", UserName: "first", Password: "frstpwd", Note: "first value"}, "testpassword")
+
+	defer os.Remove(test_db_path)
+
+	err := repo.Delete(repo.entries[0].ID, "testpassword")
+
+	if err != nil {
+		t.Error("Delete should not return error")
+	}
+	repo.load("testpassword")
+
+	if len(repo.entries) != 0 {
+		t.Error("Delete should remove entry")
+	}
+}

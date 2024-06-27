@@ -43,7 +43,7 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "up":
+		case "up", "shift+tab":
 			if m.cursor > 0 {
 				if m.cursor < len(m.fields) {
 					m.fields[m.cursor].Blur()
@@ -52,7 +52,7 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.fields[m.cursor].Focus()
 			}
-		case "down":
+		case "down", "tab":
 			if m.cursor < len(m.fields)-1 {
 				m.fields[m.cursor].Blur()
 				m.cursor++
@@ -69,7 +69,7 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 
 				m.fields[m.cursor].Focus()
-			} else if m.cursor == 2 {
+			} else {
 				entry := repository.Entry{Name: m.fields[0].Value(), Note: m.fields[1].Value()}
 				m.repo.Add(entry, m.password)
 				return m.prevModel, nil

@@ -33,6 +33,7 @@ func NewListEntriesModel(prevModel tea.Model, repo repository.RepositoryInterfac
 }
 
 func (m ListEntriesModel) Init() tea.Cmd {
+	m.entries = m.repo.List(m.searchQuery.Value(), m.password)
 	return nil
 }
 
@@ -40,21 +41,21 @@ func (m ListEntriesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "shift+tab":
+		switch msg.Type {
+		case tea.KeyUp, tea.KeyShiftTab:
 			if len(m.entries) > 0 {
 				m.cursor = (m.cursor - 1 + len(m.entries)) % len(m.entries)
 			}
-		case "down", "tab":
+		case tea.KeyDown, tea.KeyTab:
 			if len(m.entries) > 0 {
 				m.cursor = (m.cursor + 1) % len(m.entries)
 			}
-		case "b":
+		case tea.KeyEsc:
 			return m.prevModel, nil
-		case "q", "ctrl+c":
+		case tea.KeyCtrlC:
 			m.searchQuery.Blur()
 			return m, tea.Quit
-		case "enter":
+		case tea.KeyEnter:
 			if len(m.entries) > 0 {
 				return NewShowEntryModel(m, m.repo, m.entries[m.cursor], m.password), nil
 			}
@@ -62,6 +63,12 @@ func (m ListEntriesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchQuery, cmd = m.searchQuery.Update(msg)
 			m.entries = m.repo.List(m.searchQuery.Value(), m.password)
 			return m, cmd
+		}
+	case string:
+		switch msg {
+		case "UPDATE_ENTRIES":
+			m.entries = m.repo.List(m.searchQuery.Value(), m.password)
+			return m, nil
 		}
 	}
 	return m, cmd
@@ -71,8 +78,6 @@ func (m ListEntriesModel) View() string {
 	var cursor string
 
 	s := "List entries\n\n"
-
-	s += fmt.Sprintf("Total: %d\n\n", len(m.entries))
 
 	s += fmt.Sprintf("%s\n\n", m.searchQuery.View())
 
@@ -92,6 +97,6 @@ func (m ListEntriesModel) View() string {
 		s += fmt.Sprintf("%s %s\n", cursor, entryName)
 	}
 
-	s += "\n\nPress 'b' to go back, 'q' to exit\n"
+	s += "\n\nPress 'Esc' to go back, 'Ctrl+c' to exit\n"
 	return s
 }

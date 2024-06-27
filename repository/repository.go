@@ -12,6 +12,7 @@ type RepositoryInterface interface {
 	List(query, password string) []Entry
 	Get(ID, password string) (Entry, error)
 	Add(entry Entry, password string) error
+	Delete(ID, password string) error
 	CheckPassword(password string) error
 }
 
@@ -139,5 +140,20 @@ func (r *Repository) Add(entry Entry, password string) error {
 	r.load(password)
 	r.entries = append(r.entries, entry)
 	r.dump(password)
+	return nil
+}
+
+func (r *Repository) Delete(ID, password string) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.load(password)
+	for i, entry := range r.entries {
+		if entry.ID == ID {
+			r.entries = append(r.entries[:i], r.entries[i+1:]...)
+			break
+		}
+	}
+	r.dump(password)
+	r.load(password)
 	return nil
 }
