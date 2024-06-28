@@ -83,7 +83,7 @@ func (m AddWebsiteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				entry := repository.Entry{
 					ID:        uuid.New().String(),
-					Kind:      "Website",
+					Kind:      repository.WebsiteType,
 					Name:      m.fields[0].Value(),
 					URL:       m.fields[1].Value(),
 					UserName:  m.fields[2].Value(),

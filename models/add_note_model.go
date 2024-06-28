@@ -73,7 +73,7 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				entry := repository.Entry{
 					ID:   uuid.New().String(),
-					Kind: "Note",
+					Kind: repository.NoteType,
 					Name: m.fields[0].Value(),
 					Note: m.fields[1].Value(),
 				}

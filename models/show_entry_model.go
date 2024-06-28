@@ -41,16 +41,14 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "e":
 			switch m.entry.Kind {
-			case "Note":
+			case repository.NoteType:
 				return NewEditNoteModel(m.entry, m, m.repo, m.password), nil
-			case "Website":
+			case repository.WebsiteType:
 				return m, nil
 			}
 		case tea.KeyBackspace.String(), tea.KeyDelete.String(), "d":
 			// After deleting the entry, we want to go back to the previous model (entries list)
-			var msg tea.Msg = "UPDATE_ENTRIES"
-			callbackCommand := func() tea.Msg { return msg }
-			return NewConfirmationModel(m.prevModel, callbackCommand, "Are you sure you want to delete this entry?", []string{"y", "n"}, func() error {
+			return NewConfirmationModel(m.prevModel, UpdateEntriesCmd, "Are you sure you want to delete this entry?", []string{"y", "n"}, func() error {
 				err := m.repo.Delete(m.entry.ID, m.password)
 				if err != nil {
 					return err
@@ -61,7 +59,7 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case string:
 		switch msg {
-		case "UPDATE_ENTRY":
+		case UpdateEntryMsg:
 			entry, err := m.repo.Get(m.entry.ID, m.password)
 			if err != nil {
 				return m, nil

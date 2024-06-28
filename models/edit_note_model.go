@@ -77,10 +77,8 @@ func (m EditNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.note.Name = m.fields[0].Value()
 				m.note.Note = m.fields[1].Value()
 				m.repo.Update(m.note, m.password)
-				var msg tea.Msg = "UPDATE_ENTRY"
-				callbackCommand := func() tea.Msg { return msg }
 
-				return m.prevModel, callbackCommand
+				return m.prevModel, UpdateEntryCmd
 			}
 		default:
 			if m.cursor < len(m.fields) {

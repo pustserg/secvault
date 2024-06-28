@@ -8,6 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	NoteType    = "Note"
+	WebsiteType = "Website"
+)
+
 type RepositoryInterface interface {
 	List(query, password string) []Entry
 	Get(ID, password string) (Entry, error)
