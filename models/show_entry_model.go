@@ -44,7 +44,7 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case repository.NoteType:
 				return NewEditNoteModel(m.entry, m, m.repo, m.password), nil
 			case repository.WebsiteType:
-				return m, nil
+				return NewEditWebsiteModel(m.entry, m, m.repo, m.password), nil
 			}
 		case tea.KeyBackspace.String(), tea.KeyDelete.String(), "d":
 			// After deleting the entry, we want to go back to the previous model (entries list)
