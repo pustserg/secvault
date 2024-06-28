@@ -57,11 +57,12 @@ func (m ListEntriesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if len(m.entries) > 0 {
-				return NewShowEntryModel(m, m.repo, m.entries[m.cursor], m.password), nil
+				return NewShowEntryModel(m, m.repo, m.entries[m.cursor].ID, m.password), nil
 			}
 		default:
 			m.searchQuery, cmd = m.searchQuery.Update(msg)
 			m.entries = m.repo.List(m.searchQuery.Value(), m.password)
+			m.cursor = 0
 			return m, cmd
 		}
 	case string:

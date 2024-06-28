@@ -5,41 +5,44 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/google/uuid"
 	"github.com/pustserg/secvault/repository"
 )
 
-type AddNoteModel struct {
+type EditNoteModel struct {
 	repo      repository.RepositoryInterface
 	password  string
 	prevModel tea.Model
 	cursor    int
 	fields    []textinput.Model
+	note      repository.Entry
 }
 
-func NewAddNoteModel(prevModel tea.Model, repo repository.RepositoryInterface, password string) AddNoteModel {
+func NewEditNoteModel(note repository.Entry, prevModel tea.Model, repo repository.RepositoryInterface, password string) EditNoteModel {
 	nameField := textinput.New()
 	nameField.Placeholder = "Name"
 	nameField.Prompt = "Enter name: "
+	nameField.SetValue(note.Name)
 	nameField.Focus()
 
 	noteField := textinput.New()
 	noteField.Placeholder = "Note"
+	noteField.SetValue(note.Note)
 	noteField.Prompt = "Enter note: "
 
-	return AddNoteModel{
+	return EditNoteModel{
 		prevModel: prevModel,
 		repo:      repo,
 		fields:    []textinput.Model{nameField, noteField},
 		password:  password,
+		note:      note,
 	}
 }
 
-func (m AddNoteModel) Init() tea.Cmd {
+func (m EditNoteModel) Init() tea.Cmd {
 	return m.fields[0].Focus()
 }
 
-func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m EditNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -71,14 +74,13 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.fields[m.cursor].Focus()
 			} else {
-				entry := repository.Entry{
-					ID:   uuid.New().String(),
-					Kind: "Note",
-					Name: m.fields[0].Value(),
-					Note: m.fields[1].Value(),
-				}
-				m.repo.Add(entry, m.password)
-				return m.prevModel, nil
+				m.note.Name = m.fields[0].Value()
+				m.note.Note = m.fields[1].Value()
+				m.repo.Update(m.note, m.password)
+				var msg tea.Msg = "UPDATE_ENTRY"
+				callbackCommand := func() tea.Msg { return msg }
+
+				return m.prevModel, callbackCommand
 			}
 		default:
 			if m.cursor < len(m.fields) {
@@ -89,8 +91,8 @@ func (m AddNoteModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m AddNoteModel) View() string {
-	s := "Add note\n\n"
+func (m EditNoteModel) View() string {
+	s := "Edit note\n\n"
 	s += fmt.Sprintf("Cursor: %d\n", m.cursor)
 
 	var cursor string

@@ -13,6 +13,7 @@ type RepositoryInterface interface {
 	Get(ID, password string) (Entry, error)
 	Add(entry Entry, password string) error
 	Delete(ID, password string) error
+	Update(entry Entry, password string) error
 	CheckPassword(password string) error
 }
 
@@ -155,5 +156,19 @@ func (r *Repository) Delete(ID, password string) error {
 	}
 	r.dump(password)
 	r.load(password)
+	return nil
+}
+
+func (r *Repository) Update(entry Entry, password string) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.load(password)
+	for i, e := range r.entries {
+		if e.ID == entry.ID {
+			r.entries[i] = entry
+			break
+		}
+	}
+	r.dump(password)
 	return nil
 }

@@ -14,7 +14,11 @@ type ShowEntryModel struct {
 	password  string
 }
 
-func NewShowEntryModel(prevModel tea.Model, repo repository.RepositoryInterface, entry repository.Entry, password string) ShowEntryModel {
+func NewShowEntryModel(prevModel tea.Model, repo repository.RepositoryInterface, entryID string, password string) ShowEntryModel {
+	entry, err := repo.Get(entryID, password)
+	if err != nil {
+		panic(err)
+	}
 	return ShowEntryModel{
 		prevModel: prevModel,
 		repo:      repo,
@@ -35,6 +39,13 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.prevModel, nil
 		case tea.KeyCtrlC.String(), "q":
 			return m, tea.Quit
+		case "e":
+			switch m.entry.Kind {
+			case "Note":
+				return NewEditNoteModel(m.entry, m, m.repo, m.password), nil
+			case "Website":
+				return m, nil
+			}
 		case tea.KeyBackspace.String(), tea.KeyDelete.String(), "d":
 			// After deleting the entry, we want to go back to the previous model (entries list)
 			var msg tea.Msg = "UPDATE_ENTRIES"
@@ -48,12 +59,24 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}), nil
 		}
 		return m, nil
+	case string:
+		switch msg {
+		case "UPDATE_ENTRY":
+			entry, err := m.repo.Get(m.entry.ID, m.password)
+			if err != nil {
+				return m, nil
+			}
+			m.entry = entry
+			return m, nil
+		}
 	}
 	return m, nil
 }
 
 func (m ShowEntryModel) View() string {
 	s := "Show Entry\n\n"
+	s += fmt.Sprintf("Kind: %s\n", m.entry.Kind)
+	s += fmt.Sprintf("ID: %s\n", m.entry.ID)
 
 	if m.entry.Name == "" {
 		s += "Unnamed entry\n"

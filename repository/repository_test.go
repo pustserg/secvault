@@ -220,3 +220,30 @@ func TestDeleteWithCorrectID(t *testing.T) {
 		t.Error("Delete should remove entry")
 	}
 }
+
+func TestUpdate(t *testing.T) {
+	os.Create(test_db_path)
+
+	repo := NewRepository(test_db_path)
+
+	repo.load("testpassword")
+
+	repo.Add(Entry{Name: "first entry", UserName: "first", Password: "frstpwd", Note: "first value"}, "testpassword")
+	defer os.Remove(test_db_path)
+
+	repo.load("testpassword")
+
+	entry := repo.entries[0]
+
+	entry.Name = "updated name"
+
+	err := repo.Update(entry, "testpassword")
+	if err != nil {
+		t.Error("Update should not return error")
+	}
+
+	repo.load("testpassword")
+	if repo.entries[0].Name != "updated name" {
+		t.Error("Name should be updated")
+	}
+}
