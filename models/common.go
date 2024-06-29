@@ -8,4 +8,7 @@ var (
 
 	UpdateEntryCmd   tea.Cmd = func() tea.Msg { return UpdateEntryMsg }
 	UpdateEntriesCmd tea.Cmd = func() tea.Msg { return UpdateEntriesMsg }
+
+	AddEntryTargetAction    = "ADD_ENTRY"
+	ListEntriesTargetAction = "LIST_ENTRIES"
 )

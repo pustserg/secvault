@@ -12,26 +12,26 @@ var (
 	choices = []string{"generate password", "add entry", "list entries"}
 )
 
-type Model struct {
+type InitialModel struct {
 	repo    repository.RepositoryInterface
 	cfg     *config.AppConfig
 	choices []string
 	cursor  int
 }
 
-func NewInitialModel(cfg *config.AppConfig, repo repository.RepositoryInterface) Model {
-	return Model{
+func NewInitialModel(cfg *config.AppConfig, repo repository.RepositoryInterface) InitialModel {
+	return InitialModel{
 		cfg:     cfg,
 		repo:    repo,
 		choices: choices,
 	}
 }
 
-func (m Model) Init() tea.Cmd {
+func (m InitialModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m InitialModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -47,9 +47,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return NewGeneratePasswordModel(m, m.cfg), nil
 			case "add entry":
 				// need to ask the password for storage and then go to the next model
-				return NewAskPasswordModel(m, m.repo, "add entry"), nil
+				return NewAskPasswordModel(m, m.repo, AddEntryTargetAction), nil
 			case "list entries":
-				return NewAskPasswordModel(m, m.repo, "list entries"), nil
+				return NewAskPasswordModel(m, m.repo, ListEntriesTargetAction), nil
 			}
 		}
 	}
@@ -57,7 +57,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View() string {
+func (m InitialModel) View() string {
 	s := "What are we going to do today?\n\n"
 
 	for i, choice := range m.choices {

@@ -76,9 +76,9 @@ func (m AskPasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.errorMessage = err.Error()
 					return m, nil
 				} else {
-					if m.targetAction == "add entry" {
+					if m.targetAction == AddEntryTargetAction {
 						return NewChooseEntryKindModel(m, m.repo, m.password.Value()), nil
-					} else if m.targetAction == "list entries" {
+					} else if m.targetAction == ListEntriesTargetAction {
 						return NewListEntriesModel(m, m.repo, m.password.Value()), nil
 					} else {
 						return m, nil

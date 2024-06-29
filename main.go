@@ -21,7 +21,11 @@ func init() {
 	ensureAppDirExists(workdir)
 	ensureConfigFileExists(config_path)
 
-	cfg = config.NewAppConfig(config_path)
+	cfg, err := config.NewAppConfig(config_path)
+	if err != nil {
+		fmt.Println("Error reading config file:", err)
+		os.Exit(1)
+	}
 
 	ensureStoragePathExists(cfg.StoragePath)
 	repo = repository.NewRepository(cfg.StoragePath)
