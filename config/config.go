@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -17,13 +16,12 @@ type AppConfig struct {
 	StoragePath    string `yaml:"storage_path"`
 }
 
-func NewAppConfig(configPath string) *AppConfig {
+func NewAppConfig(configPath string) (*AppConfig, error) {
 	cfg := AppConfig{}
 	err := cleanenv.ReadConfig(configPath, &cfg)
 	if err != nil {
-		fmt.Println("Error reading config file:", err)
-		os.Exit(1)
+		return nil, err
 	}
 
-	return &cfg
+	return &cfg, nil
 }
