@@ -17,7 +17,7 @@ var (
 	config_path string = workdir + "/config.yaml"
 )
 
-func init() {
+func main() {
 	ensureAppDirExists(workdir)
 	ensureConfigFileExists(config_path)
 
@@ -29,9 +29,7 @@ func init() {
 
 	ensureStoragePathExists(cfg.StoragePath)
 	repo = repository.NewRepository(cfg.StoragePath)
-}
 
-func main() {
 	model := models.NewInitialModel(cfg, repo)
 
 	program := tea.NewProgram(model)

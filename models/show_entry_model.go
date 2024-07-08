@@ -14,6 +14,8 @@ type ShowEntryModel struct {
 	password  string
 }
 
+const deletionConfirmationMessage = "Are you sure you want to delete this entry?"
+
 func NewShowEntryModel(prevModel tea.Model, repo repository.RepositoryInterface, entryID string, password string) ShowEntryModel {
 	entry, err := repo.Get(entryID, password)
 	if err != nil {
@@ -48,13 +50,14 @@ func (m ShowEntryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case tea.KeyBackspace.String(), tea.KeyDelete.String(), "d":
 			// After deleting the entry, we want to go back to the previous model (entries list)
-			return NewConfirmationModel(m.prevModel, UpdateEntriesCmd, "Are you sure you want to delete this entry?", []string{"y", "n"}, func() error {
+			callback := func() error {
 				err := m.repo.Delete(m.entry.ID, m.password)
 				if err != nil {
 					return err
 				}
 				return nil
-			}), nil
+			}
+			return NewConfirmationModel(m.prevModel, m, UpdateEntriesCmd, deletionConfirmationMessage, []string{"y", "n"}, callback), nil
 		}
 		return m, nil
 	case string:

@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pustserg/secvault/config"
+	"golang.design/x/clipboard"
 )
 
 const (
@@ -33,7 +34,7 @@ type GeneratePasswordModel struct {
 
 func NewGeneratePasswordModel(prevModel tea.Model, cfg *config.AppConfig) GeneratePasswordModel {
 	textInput := textinput.New()
-	textInput.Placeholder = "password length"
+	textInput.Placeholder = "password length (1-999)"
 	textInput.CharLimit = maxPasswordLength
 	textInput.SetValue(strconv.Itoa(cfg.PasswordLength))
 	textInput.Focus()
@@ -60,20 +61,27 @@ func (m GeneratePasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q":
+		case "q", "Ctrl+c":
 			m.length.Blur()
 			return m, tea.Quit
-		case "j", "down":
+		case "j", "down", "tab":
 			if m.cursor < len(m.options)-1 {
 				m.cursor++
 			}
-		case "k", "up":
+		case "k", "up", "shift+tab":
 			if m.cursor > 0 {
 				m.cursor--
 			}
 
-		case "b":
+		case "b", "esc":
 			return m.prevModel, nil
+		case "c":
+			err := clipboard.Init()
+			if err != nil {
+				panic(err)
+			}
+
+			clipboard.Write(clipboard.FmtText, []byte(m.password))
 		case "r":
 			m.password = generatePassword(m.length.Value(), m.selected)
 		case " ", "enter":
@@ -108,7 +116,7 @@ func (m GeneratePasswordModel) View() string {
 
 	s += fmt.Sprintf("\npassword: %s\n", m.password)
 
-	s += "\npress 'r' to regenerate, 'q' to quit or 'b' to go back\n"
+	s += "\npress 'r' to regenerate, 'c' to copy password to clipboard, 'q' to quit or 'b' to go back\n"
 	return s
 }
 
