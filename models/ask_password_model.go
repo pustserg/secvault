@@ -68,6 +68,8 @@ func (m AskPasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "ctrl+c":
 			return m, tea.Quit
+		case "esc":
+			return m.prevModel, nil
 		case "enter":
 			// if cursor is on password field update password value and call next model
 			if m.cursor == 0 {

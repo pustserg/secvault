@@ -34,14 +34,14 @@ type Entry struct {
 }
 
 type Repository struct {
-	data_file_path string
-	lock           sync.RWMutex
-	entries        []Entry
+	dataFilePath string
+	lock         sync.RWMutex
+	entries      []Entry
 }
 
-func NewRepository(data_file_path string) *Repository {
+func NewRepository(dataFilePath string) *Repository {
 	r := Repository{
-		data_file_path: data_file_path,
+		dataFilePath: dataFilePath,
 	}
 
 	return &r
@@ -50,7 +50,7 @@ func NewRepository(data_file_path string) *Repository {
 func (r *Repository) load(password string) error {
 	r.entries = []Entry{}
 
-	content, err := os.ReadFile(r.data_file_path)
+	content, err := os.ReadFile(r.dataFilePath)
 	if err != nil {
 		return err
 	}
@@ -74,14 +74,14 @@ func (r *Repository) dump(password string) error {
 	if err != nil {
 		return err
 	}
-	os.WriteFile(r.data_file_path, content, 0644)
+	os.WriteFile(r.dataFilePath, content, 0644)
 	return nil
 }
 
 func (r *Repository) CheckPassword(password string) error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	content, err := os.ReadFile(r.data_file_path)
+	content, err := os.ReadFile(r.dataFilePath)
 	if err != nil {
 		return err
 	}
@@ -113,10 +113,10 @@ func (r *Repository) List(query, password string) []Entry {
 		return r.entries
 	}
 
-	result := []Entry{}
-	regexp := regexp.MustCompile("(?i)" + query)
+	var result []Entry
+	searchPattern := regexp.MustCompile("(?i)" + query)
 	for _, entry := range r.entries {
-		if regexp.MatchString(entry.Name) {
+		if searchPattern.MatchString(entry.Name) {
 			result = append(result, entry)
 		}
 	}

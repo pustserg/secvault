@@ -3,20 +3,22 @@ package models
 import tea "github.com/charmbracelet/bubbletea"
 
 type ConfirmationModel struct {
-	message         string
-	prevModel       tea.Model
-	callbackCommand tea.Cmd
-	choices         []string
-	action          func() error
+	message            string
+	successReturnModel tea.Model
+	failureReturnModel tea.Model
+	callbackCommand    tea.Cmd
+	choices            []string
+	action             func() error
 }
 
-func NewConfirmationModel(prevModel tea.Model, callbackCommand tea.Cmd, message string, choices []string, action func() error) ConfirmationModel {
+func NewConfirmationModel(successReturnModel, failureReturnModel tea.Model, callbackCommand tea.Cmd, message string, choices []string, action func() error) ConfirmationModel {
 	return ConfirmationModel{
-		message:         message,
-		prevModel:       prevModel,
-		callbackCommand: callbackCommand,
-		choices:         choices,
-		action:          action,
+		message:            message,
+		successReturnModel: successReturnModel,
+		failureReturnModel: failureReturnModel,
+		callbackCommand:    callbackCommand,
+		choices:            choices,
+		action:             action,
 	}
 }
 
@@ -35,9 +37,9 @@ func (m ConfirmationModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	return NewErrorModel(m, err.Error()), nil
 			// }
 			m.action()
-			return m.prevModel, m.callbackCommand
+			return m.successReturnModel, m.callbackCommand
 		case "n":
-			return m.prevModel, nil
+			return m.failureReturnModel, nil
 		}
 	}
 	return m, cmd

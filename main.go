@@ -11,17 +11,16 @@ import (
 )
 
 var (
-	cfg         *config.AppConfig
-	repo        repository.RepositoryInterface
-	workdir     string = os.Getenv("HOME") + "/.secvault"
-	config_path string = workdir + "/config.yaml"
+	repo       repository.RepositoryInterface
+	workdir    = os.Getenv("HOME") + "/.secvault"
+	configPath = workdir + "/config.yaml"
 )
 
-func init() {
+func main() {
 	ensureAppDirExists(workdir)
-	ensureConfigFileExists(config_path)
+	ensureConfigFileExists(configPath)
 
-	cfg, err := config.NewAppConfig(config_path)
+	cfg, err := config.NewAppConfig(configPath)
 	if err != nil {
 		fmt.Println("Error reading config file:", err)
 		os.Exit(1)
@@ -29,9 +28,7 @@ func init() {
 
 	ensureStoragePathExists(cfg.StoragePath)
 	repo = repository.NewRepository(cfg.StoragePath)
-}
 
-func main() {
 	model := models.NewInitialModel(cfg, repo)
 
 	program := tea.NewProgram(model)
@@ -42,7 +39,11 @@ func main() {
 
 func ensureAppDirExists(workdir string) {
 	if _, err := os.Stat(workdir); os.IsNotExist(err) {
-		os.Mkdir(workdir, 0755)
+		err := os.Mkdir(workdir, 0755)
+		if err != nil {
+			fmt.Println("Error creating app dir:", err)
+			os.Exit(1)
+		}
 	} else if err != nil {
 		fmt.Println("Error checking app dir:", err)
 		os.Exit(1)
@@ -53,7 +54,11 @@ func ensureConfigFileExists(configFilePath string) {
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 		fmt.Println("Config file not found, would you like to create a new one? (y/n)")
 		var answer string
-		fmt.Scanln(&answer)
+		_, err := fmt.Scanln(&answer)
+		if err != nil {
+			fmt.Println("Error reading user input:", err)
+			os.Exit(1)
+		}
 		if answer == "y" {
 			saveDefaultConfig(configFilePath)
 		} else {
@@ -66,7 +71,11 @@ func ensureStoragePathExists(storagePath string) {
 	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
 		fmt.Println("Storage file not found, would you like to create a new one? (y/n)")
 		var answer string
-		fmt.Scanln(&answer)
+		_, err := fmt.Scanln(&answer)
+		if err != nil {
+			fmt.Println("Error reading user input:", err)
+			os.Exit(1)
+		}
 		if answer == "y" {
 			fmt.Println("Creating storage file at", storagePath)
 			file, err := os.OpenFile(storagePath, os.O_RDONLY|os.O_CREATE, 0644)
@@ -74,7 +83,11 @@ func ensureStoragePathExists(storagePath string) {
 				fmt.Println("Error creating storage file:", err)
 				os.Exit(1)
 			}
-			file.Close()
+			err = file.Close()
+			if err != nil {
+				fmt.Println("Error closing storage file:", err)
+				os.Exit(1)
+			}
 		} else {
 			os.Exit(0)
 		}
@@ -91,7 +104,13 @@ func saveDefaultConfig(configFilePath string) {
 		os.Exit(1)
 	}
 
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println("Error closing config file:", err)
+			os.Exit(1)
+		}
+	}(file)
 
 	_, err = file.WriteString(config.DefaultConfigString)
 	if err != nil {
