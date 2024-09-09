@@ -14,8 +14,8 @@ func TestNewRepository(t *testing.T) {
 		t.Error("NewRepository should not return nil")
 	}
 
-	if repo.data_file_path != test_db_path {
-		t.Error("data_file_path should be set")
+	if repo.dataFilePath != test_db_path {
+		t.Error("dataFilePath should be set")
 	}
 }
 
